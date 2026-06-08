@@ -56,6 +56,7 @@ RUN apt-get update \
     btop \
     direnv \
     procps \
+    openssh-client \
     tree \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
