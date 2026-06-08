@@ -22,23 +22,39 @@ ENV LC_ALL=C.UTF-8
 # ── Pacotes do Sistema (Camada única e mínima) ────────────────
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+    apt-transport-https \
     ca-certificates \
     curl \
     wget \
     git \
     sudo \
     unzip \
+    gzip \
+    tar \
     zsh \
     bash \
     gnupg \
     lsb-release \
+    software-properties-common \
     python3.12 \
     python3.12-venv \
     python3.12-dev \
     python3-pip \
     build-essential \
+    make \
+    cmake \
+    llvm \
+    zlib1g-dev \
+    libssl-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libffi-dev \
+    libbz2-dev \
+    libncurses-dev \
     libopenblas-dev \
     gfortran \
+    btop \
+    direnv \
     procps \
     tree \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
