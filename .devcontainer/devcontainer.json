@@ -1,0 +1,66 @@
+{
+  "name": "ML & DL Sandbox (RTX 3060)",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // ── Shell padrão ──────────────────────────────────────────
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        // ── Interpreter Python ────────────────────────────────────
+        // Aponta para o Python do /opt/venv onde torch, jupyter etc. estão.
+        // ANTES era /home/devuser/.venv/bin/python (venv que não existia).
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        // ── Jupyter ───────────────────────────────────────────────
+        // Usa o kernel do Python do sistema, sem precisar selecionar manualmente.
+        "jupyter.kernels.filter": [],
+        "jupyter.notebookFileRoot": "/workspace",
+        // ── Editor ───────────────────────────────────────────────
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+          88
+        ],
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        // ── Python core ───────────────────────────────────────────
+        "ms-python.python", // IntelliSense, linting, debugging
+        "ms-python.debugpy", // Debug adapter (separado do ms-python desde 2024)
+        "ms-python.black-formatter", // Formatador Black
+        // ── Jupyter ───────────────────────────────────────────────
+        "ms-toolsai.jupyter", // Notebooks dentro do VS Code
+        "ms-toolsai.jupyter-renderers", // Renderiza outputs (plots, dataframes)
+        "ms-toolsai.vscode-jupyter-slideshow", // Slides a partir de notebooks
+        // ── Qualidade de código ───────────────────────────────────
+        "charliermarsh.ruff", // Linter Python ultra-rápido (Rust)
+        // ── Docker / Infra ────────────────────────────────────────
+        "ms-vscode-remote.remote-containers", // Dev Containers
+        "ms-azuretools.vscode-docker", // Visualiza containers e imagens
+        // ── Git ───────────────────────────────────────────────────
+        "eamodio.gitlens", // Histórico, blame, comparações
+        // ── IA ────────────────────────────────────────────────────
+        "GitHub.copilot"
+      ]
+    }
+  },
+  "remoteUser": "devuser",
+  // ── Port Forwarding ───────────────────────────────────────────
+  // Garante que o VS Code abre as portas automaticamente no browser.
+  "forwardPorts": [
+    8888,
+    6006
+  ],
+  "portsAttributes": {
+    "8888": {
+      "label": "JupyterLab",
+      "onAutoForward": "openBrowser"
+    },
+    "6006": {
+      "label": "TensorBoard",
+      "onAutoForward": "notify"
+    }
+  }
+}

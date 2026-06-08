@@ -1,0 +1,39 @@
+services:
+  dev:
+    build:
+      context: .
+      args:
+        GIT_USER_NAME: ${GIT_USER_NAME}
+        GIT_USER_EMAIL: ${GIT_USER_EMAIL}
+    container_name: dev-container-ml
+    hostname: dev-container-ml
+    restart: "no"
+
+    # ── Volumes ──
+    volumes:
+      - ./workspace:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    # ── Portas ──
+    ports:
+      - "8888:8888" # JupyterLab
+      - "6006:6006" # TensorBoard
+
+    # ── Limites e Acesso à GPU ──
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: 16G
+        reservations:
+          devices:
+            - driver: nvidia # Habilita o acesso à RTX 3060 via Toolkit
+              count: 1
+              capabilities: [gpu, utility, compute]
+
+    # ── Memória Compartilhada (Shared Memory) ──
+    shm_size: "8gb"
+
+    # ── Tmpfs para /scratch ──
+    tmpfs:
+      - /scratch:size=512M
