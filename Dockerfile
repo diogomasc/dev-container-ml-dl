@@ -7,7 +7,7 @@
 
 # Usa a imagem oficial da NVIDIA com CUDA 13.2, compilador nvcc e cuDNN embutidos.
 # Baseada no Ubuntu 24.04 para garantir o Python 3.12 nativo.
-FROM nvidia/cuda:13.2.0-devel-ubuntu24.04
+FROM nvidia/cuda:13.2.0-runtime-ubuntu24.04
 
 # ── Metadados (Padrão OCI) ──────────────────────────────────
 LABEL org.opencontainers.image.title="dev-container-ml"
@@ -18,10 +18,12 @@ LABEL org.opencontainers.image.authors="Diogo Mascarenhas <diogomascarenhas0574@
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+ENV TZ="America/Bahia"
 
 # ── Pacotes do Sistema (Camada única e mínima) ────────────────
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+    tzdata \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -43,7 +45,6 @@ RUN apt-get update \
     build-essential \
     make \
     cmake \
-    llvm \
     zlib1g-dev \
     libssl-dev \
     libreadline-dev \
@@ -52,7 +53,6 @@ RUN apt-get update \
     libbz2-dev \
     libncurses-dev \
     libopenblas-dev \
-    gfortran \
     btop \
     direnv \
     procps \
@@ -118,14 +118,21 @@ USER devuser
 # Isso não é um problema: drivers NVIDIA são retrocompatíveis —
 # o driver 595.71.05 (CUDA 13.2) roda sem fricção qualquer toolkit ≤ 13.2.
 # Versões pinadas garantem reprodutibilidade entre membros da equipe.
+# ── Stack ML/DL via uv + /opt/venv ──────────────────────────
 ENV VIRTUAL_ENV=/opt/venv
 RUN export PATH="$HOME/.local/bin:$PATH" \
-    && uv pip install \
+    && uv pip install --no-cache \
     --index-url https://download.pytorch.org/whl/cu126 \
     torch==2.11.0 \
-    && uv pip install \
+    && uv pip install --no-cache \
+    --find-links https://data.pyg.org/whl/torch-2.11.0+cu126.html \
+    torch-scatter \
+    torch-sparse \
+    torch-cluster \
     torch-geometric \
-    && uv pip install \
+    && uv pip install --no-cache \
+    tensorflow[and-cuda] \
+    keras \
     jupyterlab \
     ipywidgets \
     jupyterlab-widgets \
@@ -309,6 +316,10 @@ alias jlab='jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.toke
 alias gpu='nvidia-smi'
 alias torch-check='python3 -c "import torch; print(f\"PyTorch {torch.__version__} | CUDA disponível: {torch.cuda.is_available()} | GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else None}\")"'
 
+# ── Correção do TensorFlow (GPU & Avisos) ─────────
+export TF_ENABLE_ONEDNN_OPTS=0
+export LD_LIBRARY_PATH=$(find /opt/venv/lib/python3.12/site-packages/nvidia -type d -name lib | tr '\n' ':')$LD_LIBRARY_PATH
+
 export npm_config_ignore_scripts=false
 ZSHRC
 
@@ -318,6 +329,9 @@ export PATH="$HOME/.local/bin:$HOME/.local/share/fnm:$PATH"
 eval "$(fnm env --use-on-cd)" 2>/dev/null
 eval "$(starship init bash)" 2>/dev/null
 alias ll='ls -lah --color=auto --group-directories-first'
+
+export TF_ENABLE_ONEDNN_OPTS=0
+export LD_LIBRARY_PATH=$(find /opt/venv/lib/python3.12/site-packages/nvidia -type d -name lib | tr '\n' ':')$LD_LIBRARY_PATH
 BASHRC
 
 # ── Configuração do Git ──────────────────────────────────────
